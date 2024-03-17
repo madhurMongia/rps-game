@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import {useState } from 'react';
 import { wagmiConfig } from '@/blockchain/config.ts';
 import { deployContract as viemDeployContract, waitForTransactionReceipt } from 'viem/actions';
 import { getConnectorClient } from '@wagmi/core';
-
-const useContractDeploy = (params: any) => {
+ 
+export const useContractDeploy = (params: any) => {
   const { abi, address, bytecode, args, value } = params;
+  
   const [deployedContractAddress, setDeployedContractAddress] = useState<string | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState(null);

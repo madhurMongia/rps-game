@@ -73,7 +73,7 @@ export default function StartGame()  {
         </button>
         {deployedContractAddress && (
           <p>
-            Contract deployed at: <a href={`/game/${deployedContractAddress}`}>
+            Contract deployed at: <a href={`/${deployedContractAddress}`}>
               {deployedContractAddress}
             </a>
           </p>

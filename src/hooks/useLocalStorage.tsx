@@ -8,7 +8,8 @@ export function useLocalStorage(
 ): [string, StorageValue, (key: string, value: StorageValue) => void] {
   const [key, setKey] = useState(initialKey);
   const [value, setValue] = useState<StorageValue>(() => {
-    const itemStr = window.localStorage.getItem(key);
+    const browserStorage = typeof window !== 'undefined' ? window.localStorage : null;
+    const itemStr = browserStorage ? browserStorage.getItem(key) : null;
     if (itemStr !== null) {
       if (typeof initialValue === 'bigint') {
         return BigInt(itemStr);
@@ -22,28 +23,34 @@ export function useLocalStorage(
   const setKeyAndValue = (newKey: string, newValue: StorageValue) => {
     setKey(newKey);
     setValue(newValue);
-    if (typeof newValue === 'bigint') {
-      window.localStorage.setItem(newKey, newValue.toString());
-    } else {
-      window.localStorage.setItem(newKey, JSON.stringify(newValue));
+    const browserStorage = typeof window !== 'undefined' ? window.localStorage : null;
+    if (browserStorage) {
+      if (typeof newValue === 'bigint') {
+        browserStorage.setItem(newKey, newValue.toString());
+      } else {
+        browserStorage.setItem(newKey, JSON.stringify(newValue));
+      }
     }
   };
 
   useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === key && event.newValue !== value?.toString()) {
-        const newValue =
-          typeof initialValue === 'bigint'
-            ? BigInt(event.newValue || '0')
-            : event.newValue
-            ? JSON.parse(event.newValue)
-            : initialValue;
-        setValue(newValue);
-      }
-    };
+    const browserStorage = typeof window !== 'undefined' ? window.localStorage : null;
+    if (browserStorage) {
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === key && event.newValue !== value?.toString()) {
+          const newValue =
+            typeof initialValue === 'bigint'
+              ? BigInt(event.newValue || '0')
+              : event.newValue
+              ? JSON.parse(event.newValue)
+              : initialValue;
+          setValue(newValue);
+        }
+      };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
   }, [key, value, initialValue]);
 
   return [key, value, setKeyAndValue];
