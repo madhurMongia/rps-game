@@ -1,11 +1,5 @@
-export enum MoveType {
-    Null,
-    Rock,
-    Paper,
-    Scissors,
-    Spock,
-    Lizard,
-}
+export const MOVES = ["rock", "paper", "scissors", "lizard", "spock"] as const;
+export type Move = typeof MOVES[number];
 
 export const RPSContractProperties = {
     PLAYER1_ADDRESS: 'j1', 

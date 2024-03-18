@@ -31,7 +31,7 @@ export const useContractDeploy = (params: any) => {
 
       setDeployedContractAddress(contractAddress);
     } catch (err: any) {
-      setError(err.message);
+      setError(err?.details || err.message);
     } finally {
       setIsDeploying(false);
     }
