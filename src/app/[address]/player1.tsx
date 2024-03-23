@@ -1,73 +1,114 @@
-import { Subtitle, Title } from "@/components/battleSetup.styles";
-import { Button } from "@/components/shared/button.styles";
-import styled from "styled-components";
+import { Label, Title } from "@/components/battleSetup.styles";
+import { Button, InputField } from "@/components/shared";
+import { MOVES, RPSContractMethods } from "@/constants";
+import RPSContractABI from '@/blockchain/ABIs/RPS.json';
 import { formatEther } from "viem";
-
-const Card = styled.div`
-  background: rgba(31, 41, 55, 1);
-  width: 40vw;
-  margin: 0 auto;
-  padding: 2rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  font-family: 'Roboto', sans-serif;
-`;
-
-const InfoText = styled.p`
-  font-size: 1.125rem;
-  color: #9ca3af;
-  margin-bottom: 1.25rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const StatusText = styled.div`
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #fbbf24;
-  text-align: center;
-  margin-top: 2rem;
-`;
-
-const Countdown = styled.div`
-  font-size: 3rem;
-  font-weight: 700;
-  color: #10b981;
-  text-align: center;
-  margin-top: 1.5rem;
-`;
+import { useWaitForTransactionReceipt } from "wagmi";
+import { Card, InfoText, Countdown } from "./gameSession.styles";
+import { useLocalStorage } from "@/hooks";
+import { WeaponSelectorSelect } from "@/components/weaponSelector.styles";
+import { useEffect, useState } from "react";
 
 export function Player1Session({
   stake,
   player1,
   player2,
-  timeRemaining,
-  gameStatus,
-  claimTimeoutHandler,
+  minutes,
+  seconds,
+  contractAddress,
+  player2Move,
   showClaimButton,
-  showSolveButton,
-  solveGameHandler
+  setShowClaimButton,
+  writeContract,
+  TransactionData,
+  setSuccessMessage
 }: any) {
-    console.log([stake, player1, player2])
+
+  const [_,StoredSalt,updateStoredSalt] = useLocalStorage(`salt-${contractAddress}`, undefined);
+  const [selectedOption,setSelectedOption] = useState<number | undefined>(undefined);
+
+  const claimTimeoutHandler = async () => {
+      writeContract({
+        abi: RPSContractABI,
+        address: contractAddress,
+        functionName : RPSContractMethods.PLAYER2TIMEOUT,
+      });
+      setShowClaimButton(false);
+      alert('Timeout claimed. Player 1 is the winner by default.');
+  };
+
+  const solveGameHandler = async () => {
+    console.log(selectedOption,StoredSalt)
+    if(selectedOption !== undefined && StoredSalt !== undefined)
+    writeContract({
+      abi: RPSContractABI,
+      address: contractAddress,
+      functionName : RPSContractMethods.SOLVE,
+      args: [selectedOption +1,StoredSalt]
+    })
+  }
+
+  const handleSelectChange = (e:any) => {
+    setSelectedOption(e.target.value);
+  }
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = 
+    useWaitForTransactionReceipt({ 
+      hash:TransactionData , 
+    }) 
+
+    useEffect(() => {
+      let timeoutId: NodeJS.Timeout ;
+  
+      if(isConfirmed){
+          setSuccessMessage('Transaction confirmed.')
+      }
+      if(isConfirming){
+          setSuccessMessage('Confirming transaction...')
+      }
+      if (isConfirmed || isConfirming ) {
+          timeoutId = setTimeout(() => {
+              setSuccessMessage(null);
+          }, 5000);
+        }
+      return () => clearTimeout(timeoutId);
+    }, [isConfirmed, isConfirming]);
+
   return (
     <Card>
-      <Title>Game Status</Title>
+      <Title>Game Stats</Title>
       <InfoText>Amount Staked: {formatEther(stake)} ETH</InfoText>
-      <InfoText>Player 1: {player1}</InfoText>
-      <InfoText>Player 2: {player2}</InfoText>
-      <StatusText>{gameStatus}</StatusText>
+      <InfoText>Challenger: {player1}</InfoText>
+      <InfoText>Defender: {player2}</InfoText>
       <Countdown>
-        {`${Math.floor(timeRemaining / 60)
-          .toString()
-          .padStart(2, "0")}:${(timeRemaining % 60).toString().padStart(2, "0")}`}
-      </Countdown>  
-        {showClaimButton && (
-          <Button onClick={claimTimeoutHandler}>Claim Timeout</Button>
-        )}
-        {showSolveButton && (
-          <Button onClick={solveGameHandler}>Solve Game</Button>
-        )}
+        {`${minutes}: ${seconds}`}
+      </Countdown> 
+    { player2Move && <><Label htmlFor="weapon-selector" className="visually-hidden">
+        Reveal Your Move
+      </Label><WeaponSelectorSelect
+        id="weapon-selector"
+        value={selectedOption !== undefined? selectedOption: ''}
+        onChange={handleSelectChange}
+      >
+          <option value="" disabled>
+            Select move
+          </option>
+          {MOVES.map((move, i) => (
+            <option key={i} value={i}>
+              {move}
+            </option>
+          ))}
+        </WeaponSelectorSelect></>}
+        {
+          !StoredSalt && 
+          <><Label htmlFor="stake-amount">Salt</Label><InputField
+          id="salt"
+          type="string"
+          value={String(StoredSalt)}
+          onChange={(e) => updateStoredSalt(`salt-${contractAddress}`,e.target.value)} /></>
+        }
+          <Button onClick={claimTimeoutHandler} disabled = {!showClaimButton || player2Move}>Claim Timeout</Button>
+          <Button onClick={solveGameHandler} disabled = {!player2Move || selectedOption == undefined || !StoredSalt || isConfirming}>Solve Game</Button>
     </Card>
   );
 }

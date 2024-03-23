@@ -10,5 +10,13 @@ export const RPSContractProperties = {
     TIMEOUT_DURATION: 'TIMEOUT',
     LAST_ACTION_TIMESTAMP: 'lastAction', 
   };
-  
-  export type RPSContractPropertiesTypes = typeof RPSContractProperties;
+
+export const RPSContractMethods = {
+  PLAYER1TIMEOUT: 'j1Timeout', 
+  PLAYER2TIMEOUT: 'j2Timeout', 
+  SOLVE : 'solve',
+  PLAY: 'play'
+}
+
+export type RPSContractPropertiesTypes = typeof RPSContractProperties;
+export type RPSContractMethodsTypes = typeof RPSContractMethods;

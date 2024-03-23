@@ -73,5 +73,7 @@ export const WeaponSelector = styled.div`
 export const Label = styled.label`
   font-family: Roboto, sans-serif;
   line-height: 143%;
-  margin-top: 20px;
+  margin-top: 30px;
+  color: #9ca3af;
+  font-size: 14px;
 `;

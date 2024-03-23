@@ -15,6 +15,7 @@ export const useContractDeploy = (params: any) => {
     setError(null);
     const walletClient = await getConnectorClient(wagmiConfig);
     try {
+      
       const deploymentHash = await viemDeployContract(walletClient, {
         abi,
         account: address,

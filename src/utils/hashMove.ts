@@ -11,5 +11,5 @@ export function hashMove(move:any) {
     const hashedMove = keccak256(
         encodePacked(["uint8", "uint256"], [move, salt]),
         );
-  return { salt,hashedMove }
+  return { salt:String(salt),hashedMove }
 }

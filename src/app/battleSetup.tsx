@@ -5,44 +5,49 @@ import { useAccount } from "wagmi";
 import rpsContractABI from '@/blockchain/ABIs/RPS.json';
 import { hashMove } from "@/utils";
 import { useLocalStorage } from "@/hooks";
-import { parseEther } from "viem";
+import { Address, Hash, parseEther } from "viem";
 import {
   BattleSetupWrapper, Title,
   Subtitle, Label,
 } from "@/components/battleSetup.styles";
-import { Button } from '@/components/shared/button.styles'
-import { InputField } from "@/components/shared/Input.styles";
-import { WeaponSelectorSelect } from "@/components/shared/weaponSelector.styles";
+import { WeaponSelectorSelect } from "@/components/weaponSelector.styles";
 import { MOVES } from "@/constants";
-import { ErrorPrompt } from "@/components/shared/error.styles";
+import { StyledLink,InputField,ErrorPrompt,Button } from "@/components/shared";
 
 export default function StartGame()  {
     const { address } = useAccount();
-    const [c1, setc1] = useState('');
-    const [j2, setJ2] = useState('');
-    const [stake, setStake] = useState(0);
-    const [_,StoredSalt,updateStoredSalt] = useLocalStorage(`salt`, BigInt(0));
-    const _salt = useRef<bigint>(BigInt(0));
+    const [j2, setJ2] = useState<Address | ''>('');
+    const [selectedOption,setSelectedOption] = useState<number | undefined>(undefined);
+    const [stake, setStake] = useState<number>(0);
+    const [_,storedSalt,updateStoredSalt] = useLocalStorage(`salt`, undefined);
+    const _salt = useRef<string | undefined>();
+    const _hashedMove = useRef<Hash |undefined>();
     const { deployContract, deployedContractAddress, isDeploying, error } = useContractDeploy({
       abi: rpsContractABI,
       bytecode: RPSByteCode,
-      args: [c1, j2],
-      value: parseEther(String(stake)),
+      args: [_hashedMove.current, j2],
+      value: parseEther(String(stake || 0)),
       address,
     });
 
-    const handleMoveHash=(e: any) => {
-        const {hashedMove , salt:saltUsed} = hashMove(Number(e.target.value) -1);
-        _salt.current = saltUsed;
-        setc1(hashedMove)
-    }
+    const handleSelectChange = (event:React.ChangeEvent<HTMLSelectElement>) => {
+      setSelectedOption(Number(event.target.value));
+    };
 
     const handleDeploy = async () => {
+      if(!deployedContractAddress && _hashedMove.current){
       await deployContract();
+      }
     };
     useEffect(() => {
         updateStoredSalt(`salt-${deployedContractAddress}`,_salt.current)
     }, [deployedContractAddress])
+    useEffect(() => {
+      if(selectedOption === undefined) return;
+      const {hashedMove , salt:saltUsed} = hashMove(selectedOption+1);
+      _salt.current = saltUsed;
+      _hashedMove.current = hashedMove;
+    }, [selectedOption])
     return (
       <>
           <BattleSetupWrapper>
@@ -53,14 +58,14 @@ export default function StartGame()  {
       </Label>
       <WeaponSelectorSelect
         id="weapon-selector"
-        value={c1}
-        onChange={handleMoveHash}
+        value={selectedOption  != undefined ? selectedOption : ''} 
+        onChange={handleSelectChange}
       >
         <option value="" disabled>
           Select move
         </option>
         {MOVES.map((move, i) => (
-          <option key={move} value={i}>
+          <option key={i} value={i}>
             {move}
           </option>
         ))}
@@ -87,15 +92,15 @@ export default function StartGame()  {
               value={stake}
               onChange={(e) => setStake(Number(e.target.value))}
                />
-            <Button onClick={handleDeploy} disabled={!c1 || !j2 || !stake || isDeploying}
+            <Button onClick={handleDeploy} disabled={ selectedOption === undefined || !j2 || !stake  || isDeploying || deployedContractAddress !== null }
             >{isDeploying ? 'Preparing Battlefield...' : 'Engage Battle' }
             </Button>
             {deployedContractAddress && (
-          <Subtitle>
-          <a href={`/${deployedContractAddress}`}>
-          Navigate to Battlefield
-            </a>
-          </Subtitle>
+              <><Subtitle>Please save the salt ,you might need it to reveal move:{String(storedSalt)}</Subtitle><Subtitle>
+              <StyledLink href={`/${deployedContractAddress}`}>
+                Navigate to Battlefield
+              </StyledLink>
+            </Subtitle></>
         )}
           </BattleSetupWrapper>
           {error && <ErrorPrompt>{error}</ErrorPrompt>}
