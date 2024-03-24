@@ -74,7 +74,7 @@ export default function StartGame()  {
               value={address}
               disabled
               aria-label="Your Address:" />
-            <Label htmlFor="opponent-id">Opponent's ID</Label>
+            <Label htmlFor="opponent-id">Opponent Address</Label>
             <InputField
               id="opponent-id"
               placeholder="Enter opponent's ID"
