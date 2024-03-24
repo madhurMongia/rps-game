@@ -2,11 +2,12 @@ import { Label, Title } from "@/components/battleSetup.styles";
 import { Button, InputField } from "@/components/shared";
 import { MOVES, RPSContractMethods } from "@/constants";
 import RPSContractABI from '@/blockchain/ABIs/RPS.json';
-import { formatEther } from "viem";
-import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { decodeFunctionData, formatEther,parseTransaction  } from "viem";
+import { useWaitForTransactionReceipt, useWriteContract ,useConnectors, useWatchBlocks} from "wagmi";
 import { useEffect, useRef, useState } from "react";
 import { Card, InfoText, StatusText, Countdown } from "./gameSession.styles";
 import { WeaponSelectorSelect } from "@/components/weaponSelector.styles";
+import { getWinner } from "@/utils";
 
 export function Player2Session({
   stake,
@@ -21,15 +22,19 @@ export function Player2Session({
   setShowClaimButton,
   writeContract,
   TransactionData,
-  setSuccessMessage
+  setSuccessMessage,
+  setError,
+  refetch,
+  setWatchBlock,
+  setEndGameMassage
 }: any) {
 
-    const [selectedOption,setSelectedOption] = useState<number | undefined>(undefined);
+    const [selectedOption,setSelectedOption] = useState<number>(0);
+  
 
   const handleSelectChange = (e:any) => {
     setSelectedOption(e.target.value);
   }
-
   const claimTimeoutHandler = async () => {
       writeContract({
         abi: RPSContractABI,
@@ -40,7 +45,7 @@ export function Player2Session({
   };
 
   const playGameHandler = async () => {
-    if(selectedOption !== undefined)
+    if(selectedOption)
     writeContract({
       abi: RPSContractABI,
       address: contractAddress,
@@ -50,27 +55,32 @@ export function Player2Session({
     })
   }
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed} = 
+  const { isLoading: isConfirming, isSuccess: isConfirmed,error : TransactionError} = 
     useWaitForTransactionReceipt({ 
       hash:TransactionData,
     }) 
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout ;
-    
-        if(isConfirmed){
-            setSuccessMessage('Transaction confirmed.')
-        }
         if(isConfirming){
             setSuccessMessage('Confirming transaction...')
         }
-        if (isConfirmed || isConfirming ) {
+        if (isConfirmed) {
+          setSuccessMessage('Transaction confirmed.')
             timeoutId = setTimeout(() => {
                 setSuccessMessage(null);
             }, 5000);
+            refetch();
           }
-        return () => clearTimeout(timeoutId);
-      }, [isConfirmed, isConfirming]);
+          if(TransactionError){
+            setError(TransactionError.message)
+          }
+      }, [isConfirmed, isConfirming,TransactionError]);
+
+    useEffect(()=> {
+        if(player2Move)
+        setWatchBlock(true); 
+    },[player2Move])
   return (
     <Card>
       <Title>Game Status</Title>
@@ -81,28 +91,25 @@ export function Player2Session({
         {`${minutes}: ${seconds}`}
       </Countdown>  
     {player2Move ? 
-    <InfoText>Your Move : {MOVES[player2Move - 1]}</InfoText> : 
+    <InfoText>Your Move : {MOVES[player2Move]}</InfoText> : 
     <>
     <Label htmlFor="weapon-selector" className="visually-hidden">
         Select your weapon
       </Label>
       <WeaponSelectorSelect
         id="weapon-selector"
-        value={selectedOption !== undefined? selectedOption: ''}
+        value={selectedOption || ''}
         onChange={handleSelectChange}
       >
-        <option value="" disabled>
-          Select move
-        </option>
         {MOVES.map((move, i) => (
-          <option key={i} value={i}>
+          <option key={i} value={i || ""} disabled = {!i}>
             {move}
           </option>
         ))}
       </WeaponSelectorSelect>
       </>}
-          <Button onClick={claimTimeoutHandler} disabled = {!showClaimButton}>Claim Timeout</Button>
-          <Button onClick={playGameHandler} disabled = {selectedOption == undefined  || isConfirming || player2Move}>Play</Button>
+          <Button onClick={claimTimeoutHandler} disabled = {!(showClaimButton && player2Move)}>Claim Timeout</Button>
+          <Button onClick={playGameHandler} disabled = {selectedOption  === 0|| isConfirming || player2Move}>Play</Button>
     </Card>
   );
 }

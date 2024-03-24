@@ -1,4 +1,4 @@
-export const MOVES = ["rock", "paper", "scissors", "lizard", "spock"] as const;
+export const MOVES = ['select your move',"rock", "paper", "scissors", "spock","lizard"] as const;
 export type Move = typeof MOVES[number];
 
 export const RPSContractProperties = {

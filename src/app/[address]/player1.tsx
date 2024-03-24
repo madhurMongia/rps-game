@@ -8,6 +8,7 @@ import { Card, InfoText, Countdown } from "./gameSession.styles";
 import { useLocalStorage } from "@/hooks";
 import { WeaponSelectorSelect } from "@/components/weaponSelector.styles";
 import { useEffect, useState } from "react";
+import { decrypt } from "@/utils";
 
 export function Player1Session({
   stake,
@@ -21,11 +22,13 @@ export function Player1Session({
   setShowClaimButton,
   writeContract,
   TransactionData,
-  setSuccessMessage
+  setSuccessMessage,
+  setError,
+  setWatchBlock,
 }: any) {
 
   const [_,StoredSalt,updateStoredSalt] = useLocalStorage(`salt-${contractAddress}`, undefined);
-  const [selectedOption,setSelectedOption] = useState<number | undefined>(undefined);
+  const [selectedOption,setSelectedOption] = useState<number>(0);
 
   const claimTimeoutHandler = async () => {
       writeContract({
@@ -34,45 +37,44 @@ export function Player1Session({
         functionName : RPSContractMethods.PLAYER2TIMEOUT,
       });
       setShowClaimButton(false);
-      alert('Timeout claimed. Player 1 is the winner by default.');
   };
 
   const solveGameHandler = async () => {
-    console.log(selectedOption,StoredSalt)
+    const originalSalt = await decrypt(StoredSalt);
     if(selectedOption !== undefined && StoredSalt !== undefined)
+    console.log(selectedOption,originalSalt)
     writeContract({
       abi: RPSContractABI,
       address: contractAddress,
       functionName : RPSContractMethods.SOLVE,
-      args: [selectedOption +1,StoredSalt]
-    })
+      args: [selectedOption,originalSalt],
+    }, {onSuccess : () => setWatchBlock(true)})
   }
 
   const handleSelectChange = (e:any) => {
     setSelectedOption(e.target.value);
   }
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = 
+  const { isLoading: isConfirming, isSuccess: isConfirmed , error : TransactionError,data: transactionHashData} = 
     useWaitForTransactionReceipt({ 
-      hash:TransactionData , 
+      hash:TransactionData ,
     }) 
 
     useEffect(() => {
       let timeoutId: NodeJS.Timeout ;
-  
-      if(isConfirmed){
-          setSuccessMessage('Transaction confirmed.')
-      }
       if(isConfirming){
           setSuccessMessage('Confirming transaction...')
       }
-      if (isConfirmed || isConfirming ) {
+      if (isConfirmed) {
+        setSuccessMessage('Transaction confirmed.',)
           timeoutId = setTimeout(() => {
               setSuccessMessage(null);
           }, 5000);
         }
-      return () => clearTimeout(timeoutId);
-    }, [isConfirmed, isConfirming]);
+        if(TransactionError){
+          setError(TransactionError.message)
+        }
+    }, [isConfirmed, isConfirming,TransactionError]);
 
   return (
     <Card>
@@ -83,22 +85,19 @@ export function Player1Session({
       <Countdown>
         {`${minutes}: ${seconds}`}
       </Countdown> 
-    { player2Move && <><Label htmlFor="weapon-selector" className="visually-hidden">
+    { player2Move ? <><Label htmlFor="weapon-selector" className="visually-hidden">
         Reveal Your Move
       </Label><WeaponSelectorSelect
         id="weapon-selector"
-        value={selectedOption !== undefined? selectedOption: ''}
+        value={selectedOption || ''}
         onChange={handleSelectChange}
       >
-          <option value="" disabled>
-            Select move
-          </option>
           {MOVES.map((move, i) => (
-            <option key={i} value={i}>
+            <option key={i} value={i || ""} disabled = {!i}>
               {move}
             </option>
           ))}
-        </WeaponSelectorSelect></>}
+        </WeaponSelectorSelect></>: null}
         {
           !StoredSalt && 
           <><Label htmlFor="stake-amount">Salt</Label><InputField
@@ -108,7 +107,7 @@ export function Player1Session({
           onChange={(e) => updateStoredSalt(`salt-${contractAddress}`,e.target.value)} /></>
         }
           <Button onClick={claimTimeoutHandler} disabled = {!showClaimButton || player2Move}>Claim Timeout</Button>
-          <Button onClick={solveGameHandler} disabled = {!player2Move || selectedOption == undefined || !StoredSalt || isConfirming}>Solve Game</Button>
+          <Button onClick={solveGameHandler} disabled = {!player2Move || selectedOption == 0 || !StoredSalt || isConfirming}>Solve Game</Button>
     </Card>
   );
 }

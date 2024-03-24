@@ -1,8 +1,11 @@
 import styled from 'styled-components';
 
 export const ErrorPrompt = styled.div`
-  align-self: center;
-  margin-top: 24px;
+  position: fixed;
+  bottom: 24px; /* Adjust the distance from the bottom as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
   padding: 13px 19px;
   color: #fff;
   font: 16px/150% Roboto, sans-serif;
@@ -10,13 +13,15 @@ export const ErrorPrompt = styled.div`
   background-color: #d32f2f;
   border: none;
   border-radius: 4px;
-  margin-left: auto;
-  margin-right: auto;
 `;
 
 export const SuccessPrompt = styled.div`
-  align-self: center;
-  margin-top: 24px;
+  position: fixed;
+  bottom: 24px; 
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 30vw; 
   padding: 13px 19px;
   color: #fff;
   font: 16px/150% Roboto, sans-serif;
@@ -24,7 +29,4 @@ export const SuccessPrompt = styled.div`
   background-color: #43a047;
   border: none;
   border-radius: 4px;
-  width: 30vw;
-  margin-left: auto;
-  margin-right: auto;
 `;

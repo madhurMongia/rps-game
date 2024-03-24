@@ -7,7 +7,6 @@ export const AppContainer = styled.main`
   background-color: #111827;
   color: #d1d5db;
   font-weight: 700;
-  padding: 80px 60px;
   margin: 0;
   font-size: 14px;
 `;
@@ -17,7 +16,6 @@ export const BattleSetupWrapper = styled.section`
   flex-direction: column;
   justify-content: center;
   align-self: center;
-  width: 448px;
   max-width: 100%;
   margin-top: 28px;
   padding: 37px 64px 79px;
@@ -49,27 +47,6 @@ export const Subtitle = styled.h2`
   margin-top: 23px;
   font: 500 18px Roboto, sans-serif;
 `;
-
-export const ChooseWeaponText = styled.p`
-  font-family: Roboto, sans-serif;
-  line-height: 143%;
-  margin-top: 47px;
-
-  @media (max-width: 991px) {
-    margin-top: 40px;
-  }
-`;
-
-export const WeaponSelector = styled.div`
-  height: 38px;
-  margin-top: 10px;
-  background-color: #374151;
-  border: 1px solid rgba(229, 231, 235, 1);
-  border-radius: 4px;
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1),
-    0px 1px 2px -1px rgba(0, 0, 0, 0.1);
-`;
-
 export const Label = styled.label`
   font-family: Roboto, sans-serif;
   line-height: 143%;

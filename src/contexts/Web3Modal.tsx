@@ -16,7 +16,8 @@ if (!projectId) throw new Error('Project ID is not defined')
 
 createWeb3Modal({
   wagmiConfig,
-  projectId
+  projectId,
+  
 })
 
 export default function Web3ModalProvider({

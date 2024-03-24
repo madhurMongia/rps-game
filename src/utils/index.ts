@@ -1,2 +1,2 @@
 export * from "./hashMove"
-export * from "./formatTIme"
+export * from "./getWinner"

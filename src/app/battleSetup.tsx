@@ -13,11 +13,12 @@ import {
 import { WeaponSelectorSelect } from "@/components/weaponSelector.styles";
 import { MOVES } from "@/constants";
 import { StyledLink,InputField,ErrorPrompt,Button } from "@/components/shared";
+import CopyOnClick from "./copyClick";
 
 export default function StartGame()  {
     const { address } = useAccount();
     const [j2, setJ2] = useState<Address | ''>('');
-    const [selectedOption,setSelectedOption] = useState<number | undefined>(undefined);
+    const [selectedOption,setSelectedOption] = useState<number>(0);
     const [stake, setStake] = useState<number>(0);
     const [_,storedSalt,updateStoredSalt] = useLocalStorage(`salt`, undefined);
     const _salt = useRef<string | undefined>();
@@ -25,8 +26,7 @@ export default function StartGame()  {
     const { deployContract, deployedContractAddress, isDeploying, error } = useContractDeploy({
       abi: rpsContractABI,
       bytecode: RPSByteCode,
-      args: [_hashedMove.current, j2],
-      value: parseEther(String(stake || 0)),
+      value: parseEther(String(stake)),
       address,
     });
 
@@ -35,18 +35,18 @@ export default function StartGame()  {
     };
 
     const handleDeploy = async () => {
-      if(!deployedContractAddress && _hashedMove.current){
-      await deployContract();
+      if(!deployedContractAddress && j2 !== address && selectedOption){
+          const {hashedMove , salt:saltUsed} = await hashMove(selectedOption);
+          _salt.current = saltUsed;
+          _hashedMove.current = hashedMove;
+          console.log({hashedMove ,saltUsed})
+      await deployContract({args: [hashedMove,j2]});
       }
     };
     useEffect(() => {
         updateStoredSalt(`salt-${deployedContractAddress}`,_salt.current)
     }, [deployedContractAddress])
     useEffect(() => {
-      if(selectedOption === undefined) return;
-      const {hashedMove , salt:saltUsed} = hashMove(selectedOption+1);
-      _salt.current = saltUsed;
-      _hashedMove.current = hashedMove;
     }, [selectedOption])
     return (
       <>
@@ -58,14 +58,11 @@ export default function StartGame()  {
       </Label>
       <WeaponSelectorSelect
         id="weapon-selector"
-        value={selectedOption  != undefined ? selectedOption : ''} 
+        value={selectedOption || ''} 
         onChange={handleSelectChange}
       >
-        <option value="" disabled>
-          Select move
-        </option>
         {MOVES.map((move, i) => (
-          <option key={i} value={i}>
+          <option key={i} value={i || ""} disabled = {!i}>
             {move}
           </option>
         ))}
@@ -89,14 +86,17 @@ export default function StartGame()  {
             <InputField
               id="stake"
               type="number"
+              placeholder="Enter stake amount"
+              aria-label="Stake Amount"
               value={stake}
+              min={0}
               onChange={(e) => setStake(Number(e.target.value))}
                />
-            <Button onClick={handleDeploy} disabled={ selectedOption === undefined || !j2 || !stake  || isDeploying || deployedContractAddress !== null }
+            <Button onClick={handleDeploy} disabled={ !selectedOption || !j2 || isDeploying || deployedContractAddress !== null }
             >{isDeploying ? 'Preparing Battlefield...' : 'Engage Battle' }
             </Button>
             {deployedContractAddress && (
-              <><Subtitle>Please save the salt ,you might need it to reveal move:{String(storedSalt)}</Subtitle><Subtitle>
+              <><CopyOnClick text = {`Click here to save the salt, you might need it to reveal the move later`} value = {String(storedSalt)}/><Subtitle>
               <StyledLink href={`/${deployedContractAddress}`}>
                 Navigate to Battlefield
               </StyledLink>

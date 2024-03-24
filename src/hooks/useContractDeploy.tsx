@@ -4,18 +4,17 @@ import { deployContract as viemDeployContract, waitForTransactionReceipt } from 
 import { getConnectorClient } from '@wagmi/core';
  
 export const useContractDeploy = (params: any) => {
-  const { abi, address, bytecode, args, value } = params;
+  const { abi, address, bytecode, value } = params;
   
   const [deployedContractAddress, setDeployedContractAddress] = useState<string | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState(null);
 
-  const deployContract = async () => {
+  const deployContract = async ({args}:{args : Array<any>}) => {
     setIsDeploying(true);
     setError(null);
     const walletClient = await getConnectorClient(wagmiConfig);
     try {
-      
       const deploymentHash = await viemDeployContract(walletClient, {
         abi,
         account: address,
