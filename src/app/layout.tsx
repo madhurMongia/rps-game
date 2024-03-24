@@ -11,7 +11,13 @@ export const metadata: Metadata = {
   title: 'Start Battle',
   description: 'Create RPS game'
 }
-const bodyStyles = {
+interface BodyStyleProps {
+  backgroundColor: string;
+  overflowX: 'auto' | 'hidden' | 'scroll' | 'visible' | 'initial' | 'inherit';
+  margin: number;
+}
+
+const bodyStyles:BodyStyleProps = {
   backgroundColor: '#111827', 
   overflowX: 'hidden',
   margin : 0

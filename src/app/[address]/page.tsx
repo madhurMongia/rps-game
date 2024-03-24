@@ -111,10 +111,6 @@ const GameSession = ({ params }: { params: { address: any } }) => {
     return () => clearInterval(interval);
   }, []); 
 
-
-  if (!isLoadingPlayer1 && !isLoadingPlayer2 && ![player1, player2].includes(player)) {
-    return redirect('/');
-  }
   const processBlock = (block:any) => {
     const transactions = block.transactions;
     console.log(transactions.length)
@@ -156,9 +152,12 @@ const GameSession = ({ params }: { params: { address: any } }) => {
     includeTransactions: true,
     enabled: enabledWatchBlock,
     emitOnBegin: true,
-
     onBlock: processBlock,
   })
+
+  if (!isLoadingPlayer1 && !isLoadingPlayer2 && ![player1, player2].includes(player)) {
+    return redirect('/');
+  }
 
 
   return (
