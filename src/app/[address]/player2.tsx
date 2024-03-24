@@ -26,7 +26,6 @@ export function Player2Session({
   setError,
   refetch,
   setWatchBlock,
-  setEndGameMassage
 }: any) {
 
     const [selectedOption,setSelectedOption] = useState<number>(0);

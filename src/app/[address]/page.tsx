@@ -24,7 +24,7 @@ const GameSession = ({ params }: { params: { address: any } }) => {
     functionName: RPSContractProperties.PLAYER2_MOVE,
   });
 
-  const [_, endGameMessage, setEndGameMassage] = useLocalStorage(`endGame-${contractAddress}`, undefined);
+  const [_, endGameMessage, setEndGameMassage] = useLocalStorage(`endGame-${player}-${contractAddress}`, `Game details not found`);
   
   const { data: stake } = useReadContract({
     abi: RPSContractABI,
@@ -135,15 +135,15 @@ const GameSession = ({ params }: { params: { address: any } }) => {
                 else {
                     msg = `Tie!,there move was ${player == player1 ? MOVES[Number(player2Move)] : MOVES[Number(player1Move)]}`
                 }
-                setEndGameMassage(`endGame-${contractAddress}`, msg);
+                setEndGameMassage(`endGame-${player}-${contractAddress}`, msg);
             }
             else if(functionData.functionName == RPSContractMethods.PLAYER2TIMEOUT)
-              setEndGameMassage(`endGame-${contractAddress}`, `Player 2 timed out. Player 1 is the winner by default.`)
+              setEndGameMassage(`endGame-${player}-${contractAddress}`, `Player 2 timed out. Player 1 is the winner by default.`)
         }
         else if(tx.from == String(player2).toLowerCase()){
           const functionData = decodeFunctionData({abi: RPSContractABI, data: tx.input});
           if(functionData.functionName == RPSContractMethods.PLAYER1TIMEOUT)
-              setEndGameMassage(`endGame-${contractAddress}`, `Player 1 timed out. Player 2 is the winner by default.`)
+              setEndGameMassage(`endGame-${player}-${contractAddress}`, `Player 1 timed out. Player 2 is the winner by default.`)
         }
     })
 }
