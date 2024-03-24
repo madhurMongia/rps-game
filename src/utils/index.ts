@@ -1,1 +1,2 @@
-export * from './hashMove'
+export * from "./hashMove"
+export * from "./getWinner"

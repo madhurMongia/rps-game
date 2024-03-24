@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
+import {useState } from 'react';
 import { wagmiConfig } from '@/blockchain/config.ts';
 import { deployContract as viemDeployContract, waitForTransactionReceipt } from 'viem/actions';
 import { getConnectorClient } from '@wagmi/core';
-
-const useContractDeploy = (params: any) => {
-  const { abi, address, bytecode, args, value } = params;
+ 
+export const useContractDeploy = (params: any) => {
+  const { abi, address, bytecode, value } = params;
+  
   const [deployedContractAddress, setDeployedContractAddress] = useState<string | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState(null);
 
-  const deployContract = async () => {
+  const deployContract = async ({args}:{args : Array<any>}) => {
     setIsDeploying(true);
     setError(null);
     const walletClient = await getConnectorClient(wagmiConfig);
@@ -30,7 +31,7 @@ const useContractDeploy = (params: any) => {
 
       setDeployedContractAddress(contractAddress);
     } catch (err: any) {
-      setError(err.message);
+      setError(err?.details || err.message);
     } finally {
       setIsDeploying(false);
     }

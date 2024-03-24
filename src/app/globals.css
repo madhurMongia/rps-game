@@ -1,0 +1,8 @@
+body {
+    margin: 0;
+    background-color: #111827;
+}
+
+html, body {
+    overflow-y: hidden;
+}
