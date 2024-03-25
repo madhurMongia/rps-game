@@ -24,7 +24,7 @@ const GameSession = ({ params }: { params: { address: any } }) => {
     functionName: RPSContractProperties.PLAYER2_MOVE,
   });
 
-  const [_, endGameMessage, setEndGameMassage] = useLocalStorage(`endGame-${player}-${contractAddress}`, `Game details not found`);
+  const [_, endGameMessage, setEndGameMassage] = useLocalStorage(`endGame-${player}-${contractAddress}`, undefined);
   
   const { data: stake } = useReadContract({
     abi: RPSContractABI,
