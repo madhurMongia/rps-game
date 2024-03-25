@@ -62,8 +62,8 @@ It has been built using Next.js frontend and using wagmi(viem) library to intrac
 > $ http://localhost:3000/ 
 > ```
 
-##How to Play
-[![Watch the video]](https://screenrec.com/share/cpBQFDo5Yd)
+## How to Play
+[Click here to see the demo](https://screenrec.com/share/cpBQFDo5Yd)
 
 ## Challenges and Their Solutions
 1. # Securing the Salt: Ensuring Move Privacy and Preventing XSS Vulnerabilities
