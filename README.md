@@ -63,7 +63,7 @@ It has been built using Next.js frontend and using wagmi(viem) library to intrac
 > ```
 
 ## How to Play
-[Click here to see the Play demo](https://screenrec.com/share/cpBQFDo5Yd)
+[Click here to see the Play demo](https://screenrec.com/share/cpBQFDo5Yd)\
 [what will happen on timeout](https://screenrec.com/share/PUBmuFq0iZ)
 
 ## Challenges and Their Solutions
