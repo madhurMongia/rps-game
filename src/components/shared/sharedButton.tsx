@@ -1,4 +1,4 @@
 
 export default function ConnectButton() {
-    return <w3m-button />
+    return <div style={{marginTop: '50px'}}><w3m-button /></div>
   }
