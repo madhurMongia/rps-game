@@ -2,16 +2,16 @@
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Repository Structure](#Repository)
-- [How to Run](#how-to-run)
-- [Demo](#demo)
+- [Repository Structure](#repository-structure)
+- [Installation](#installation)
+- [How to Play](#how-to-play)
 - [Challenges and Their Solutions](#challenges-and-their-solutions)
 
 ## Introduction
 This project is an RPSSL game build upon blockchain, the game is a spin on classic Rock Paper scissors with two more available options, Lizard and Spock. T
 It has been built using Next.js frontend and using wagmi(viem) library to intract with the block chain, The project also uses Web3Modal to semlessly switch between various chain and wallets for this demo we will be using metamask and sepoila chain.
 
-##  Repository Structure()
+##  Repository Structure
 
 ```sh
 └── rps-game/
