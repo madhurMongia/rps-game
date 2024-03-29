@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import rpsContractABI from '@/blockchain/ABIs/RPS.json';
 import { hashMove } from "@/utils";
 import { useLocalStorage } from "@/hooks";
-import { Address, Hash, parseEther } from "viem";
+import { Address, parseEther } from "viem";
 import {
   BattleSetupWrapper, Title,
   Subtitle, Label,
@@ -19,14 +19,15 @@ export default function StartGame()  {
     const { address } = useAccount();
     const [j2, setJ2] = useState<Address | ''>('');
     const [selectedOption,setSelectedOption] = useState<number>(0);
-    const [stake, setStake] = useState<number>(0);
-    const [_,storedSalt,updateStoredSalt] = useLocalStorage(`salt`, undefined);
+    const [stake, setStake] = useState<string | ''>('');
+    const [,storedSalt,updateStoredSalt] = useLocalStorage(`salt`, undefined);
+    const [,storedHash,updateStoredHash] = useLocalStorage(`move`, undefined);
     const _salt = useRef<string | undefined>();
-    const _hashedMove = useRef<Hash |undefined>();
+    const _encryptedMove = useRef<string |undefined>();
     const { deployContract, deployedContractAddress, isDeploying, error } = useContractDeploy({
       abi: rpsContractABI,
       bytecode: RPSByteCode,
-      value: parseEther(String(stake)),
+      value: parseEther(stake),
       address,
     });
 
@@ -36,15 +37,16 @@ export default function StartGame()  {
 
     const handleDeploy = async () => {
       if(!deployedContractAddress && j2 !== address && selectedOption){
-          const {hashedMove , salt:saltUsed} = await hashMove(selectedOption);
+          const {hashedMove , salt:saltUsed,encryptedMove} = await hashMove(selectedOption);
           _salt.current = saltUsed;
-          _hashedMove.current = hashedMove;
+          _encryptedMove.current = encryptedMove;
           console.log({hashedMove ,saltUsed})
       await deployContract({args: [hashedMove,j2]});
       }
     };
     useEffect(() => {
         updateStoredSalt(`salt-${deployedContractAddress}`,_salt.current)
+        updateStoredHash(`move-${deployedContractAddress}`,_encryptedMove.current)
     }, [deployedContractAddress])
     useEffect(() => {
     }, [selectedOption])
@@ -90,13 +92,15 @@ export default function StartGame()  {
               aria-label="Stake Amount"
               value={stake}
               min={0}
-              onChange={(e) => setStake(Number(e.target.value))}
+              onChange={(e) => setStake(String(e.target.value))}
                />
             <Button onClick={handleDeploy} disabled={ !selectedOption || !j2 || isDeploying || deployedContractAddress !== null }
             >{isDeploying ? 'Preparing Battlefield...' : 'Engage Battle' }
             </Button>
             {deployedContractAddress && (
-              <><CopyOnClick text = {`Click here to save the salt, you might need it to reveal the move later`} value = {String(storedSalt)}/><Subtitle>
+              <><CopyOnClick text = {`Click here to save the salt, you might need it to reveal the move later`} value = {String(storedSalt)}/>
+              <CopyOnClick text = {`Please share the session link with your opponent ,Click me to copy`} value = {`${window.location.href}${deployedContractAddress}`}/>
+              <Subtitle>
               <StyledLink href={`/${deployedContractAddress}`}>
                 Navigate to Battlefield
               </StyledLink>

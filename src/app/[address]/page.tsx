@@ -14,6 +14,7 @@ import { getWinner } from '@/utils';
 import { decodeFunctionData } from 'viem';
 import { useLocalStorage } from '@/hooks';
 import dynamic from 'next/dynamic';
+import ConnectButton from '@/components/shared/sharedButton';
 
 const GameSession = ({ params }: { params: { address: any } }) => {
   const { address: contractAddress } = params;
@@ -162,49 +163,53 @@ const GameSession = ({ params }: { params: { address: any } }) => {
 
   return (
       <AppContainer>
-        {endGameMessage? (
-        <GameEnd message = {endGameMessage}/>
-        ) : player == player1 ? (
-          <Player1Session
-            contractAddress={contractAddress}
-            minutes={minutes}
-            seconds={seconds}
-            player2Move={player2Move}
-            showClaimButton={showClaimButton}
-            setShowClaimButton = {setShowClaimButton}
-            player1={player1}
-            stake={stake}
-            player2={player2}
-            setError={setError}
-            writeContract={writeContract}
-            TransactionData={TransactionData}
-            refetch ={refetchPlayer2Move}
-            setSuccessMessage ={ setSuccessMessage}
-            setWatchBlock = {setWatchBlock}
-            setEndGameMassage = {setEndGameMassage}
-          />
-        ) : player == player2 ? (
-          <Player2Session
-            contractAddress={contractAddress}
-            minutes={minutes}
-            seconds={seconds}
-            player2Move={player2Move}
-            showClaimButton={showClaimButton}
-            setShowClaimButton = {setShowClaimButton}
-            player1={player1}
-            stake={stake}
-            player2={player2}
-            setError={setError}
-            writeContract={writeContract}
-            TransactionData={TransactionData}
-            setSuccessMessage = {setSuccessMessage}
-            refetch = {refetchPlayer2Move}
-            setWatchBlock = {setWatchBlock}
-            setEndGameMassage = {setEndGameMassage}
-          />
-        ) : null}
-        {error && <ErrorPrompt>{error}</ErrorPrompt>}
-        {success && <SuccessPrompt>{success}</SuccessPrompt>}
+        <ConnectButton></ConnectButton>
+        {
+            player?<>
+            {endGameMessage? (
+              <GameEnd message = {endGameMessage}/>
+              ) : player == player1 ? (
+                <Player1Session
+                  contractAddress={contractAddress}
+                  minutes={minutes}
+                  seconds={seconds}
+                  player2Move={player2Move}
+                  showClaimButton={showClaimButton}
+                  setShowClaimButton = {setShowClaimButton}
+                  player1={player1}
+                  stake={stake}
+                  player2={player2}
+                  setError={setError}
+                  writeContract={writeContract}
+                  TransactionData={TransactionData}
+                  refetch ={refetchPlayer2Move}
+                  setSuccessMessage ={ setSuccessMessage}
+                  setWatchBlock = {setWatchBlock}
+                  setEndGameMassage = {setEndGameMassage}
+                />
+              ) : player == player2 ? (
+                <Player2Session
+                  contractAddress={contractAddress}
+                  minutes={minutes}
+                  seconds={seconds}
+                  player2Move={player2Move}
+                  showClaimButton={showClaimButton}
+                  setShowClaimButton = {setShowClaimButton}
+                  player1={player1}
+                  stake={stake}
+                  player2={player2}
+                  setError={setError}
+                  writeContract={writeContract}
+                  TransactionData={TransactionData}
+                  setSuccessMessage = {setSuccessMessage}
+                  refetch = {refetchPlayer2Move}
+                  setWatchBlock = {setWatchBlock}
+                  setEndGameMassage = {setEndGameMassage}
+                />
+              ) : null}
+              {error && <ErrorPrompt>{error}</ErrorPrompt>}{success && <SuccessPrompt>{success}</SuccessPrompt>}</> : <div>connect to wallet</div>
+        }
+
       </AppContainer>
   );
 }

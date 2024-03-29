@@ -27,8 +27,10 @@ export function Player1Session({
   setWatchBlock,
 }: any) {
 
-  const [_,StoredSalt,updateStoredSalt] = useLocalStorage(`salt-${contractAddress}`, undefined);
-  const [selectedOption,setSelectedOption] = useState<number>(0);
+  const [,StoredSalt,updateStoredSalt] = useLocalStorage(`salt-${contractAddress}`, undefined);
+  const [,StoredMove,updateStoredMove] = useLocalStorage(`move-${contractAddress}`, undefined);
+  const [selectedOption,setSelectedOption] = useState<number | undefined>();
+  const [inputSalt, setInputSalt] = useState("");
 
   const claimTimeoutHandler = async () => {
       writeContract({
@@ -39,15 +41,18 @@ export function Player1Session({
       setShowClaimButton(false);
   };
 
-  const solveGameHandler = async () => {
-    const originalSalt = await decrypt(StoredSalt);
-    if(selectedOption !== undefined && StoredSalt !== undefined)
-    console.log(selectedOption,originalSalt)
+  const solveGameHandler = async () => { 
+    const move = selectedOption || await decrypt(StoredMove);
+    const salt = await decrypt(inputSalt || StoredSalt);
+    if(!move || !salt){
+      setError('Invalid move or salt');
+      return; 
+    }
     writeContract({
       abi: RPSContractABI,
       address: contractAddress,
       functionName : RPSContractMethods.SOLVE,
-      args: [selectedOption,originalSalt],
+      args: [move,salt],
     }, {onSuccess : () => setWatchBlock(true)})
   }
 
@@ -84,8 +89,9 @@ export function Player1Session({
       <InfoText>Defender: {player2}</InfoText>
       <Countdown>
         {`${minutes}: ${seconds}`}
-      </Countdown> 
-    { player2Move ? <><Label htmlFor="weapon-selector" className="visually-hidden">
+      </Countdown>
+      {player2Move && <InfoText>Opponent's Move: {MOVES[player2Move]}, its your turn now</InfoText>}
+    { !StoredMove  &&  player2Move ? <><Label htmlFor="weapon-selector" className="visually-hidden">
         Reveal Your Move
       </Label><WeaponSelectorSelect
         id="weapon-selector"
@@ -99,15 +105,15 @@ export function Player1Session({
           ))}
         </WeaponSelectorSelect></>: null}
         {
-          !StoredSalt && 
+          (!StoredSalt && player2Move) &&
           <><Label htmlFor="stake-amount">Salt</Label><InputField
           id="salt"
           type="string"
-          value={String(StoredSalt)}
-          onChange={(e) => updateStoredSalt(`salt-${contractAddress}`,e.target.value)} /></>
+          value={inputSalt}
+          onChange={(e) => setInputSalt(e.target.value)} /></>
         }
           <Button onClick={claimTimeoutHandler} disabled = {!showClaimButton || player2Move}>Claim Timeout</Button>
-          <Button onClick={solveGameHandler} disabled = {!player2Move || selectedOption == 0 || !StoredSalt || isConfirming}>Solve Game</Button>
+          <Button onClick={solveGameHandler} disabled = {!player2Move || !(StoredMove || selectedOption) || !(StoredSalt || inputSalt) || isConfirming}>Solve Game</Button>
     </Card>
   );
 }

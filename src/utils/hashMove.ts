@@ -12,13 +12,18 @@ function encrypt(originalValue:any) {
   return encrypted;
 }
 
-export async function decrypt(hashedValue:any) {
+export async function decrypt(hashedValue: any) {
   'use server';
-  console.log(hashedValue)
+  try{
   const decipher = crypto.createDecipher(ALGORITHM, SECRET_KEY.slice(0, KEY_LENGTH));
   let decrypted = decipher.update(String(hashedValue), 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
+  }
+  catch(e){
+    console.log(e)
+    return null;
+  }
 }
 
 function getRandomUInt256() {
@@ -28,12 +33,12 @@ function getRandomUInt256() {
 
 export async function hashMove(move:any) {
   'use server'
-  console.log(move)
     const salt = getRandomUInt256()
     console.log(salt)
     const hashedMove = keccak256(
         encodePacked(["uint8", "uint256"], [move, salt]),
         );
+    const encryptedMove = encrypt(move);
     const hashedSalt = encrypt(salt);
-  return { salt:String(hashedSalt),hashedMove }
+  return { salt:String(hashedSalt),hashedMove,encryptedMove }
 }
