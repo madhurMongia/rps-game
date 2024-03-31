@@ -1,7 +1,7 @@
 import { RPSByteCode } from "@/blockchain/bytecode";
 import useContractDeploy from "@/hooks/useContractDeploy";
 import { useState, useEffect, useRef } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import rpsContractABI from '@/blockchain/ABIs/RPS.json';
 import { hashMove } from "@/utils";
 import { useLocalStorage } from "@/hooks";
@@ -17,6 +17,9 @@ import CopyOnClick from "./copyClick";
 
 export default function StartGame()  {
     const { address } = useAccount();
+    const {data:balance} = useBalance({
+      address
+    })
     const [j2, setJ2] = useState<Address | ''>('');
     const [selectedOption,setSelectedOption] = useState<number>(0);
     const [stake, setStake] = useState<string | ''>('');
@@ -24,7 +27,7 @@ export default function StartGame()  {
     const [,storedHash,updateStoredHash] = useLocalStorage(`move`, undefined);
     const _salt = useRef<string | undefined>();
     const _encryptedMove = useRef<string |undefined>();
-    const { deployContract, deployedContractAddress, isDeploying, error } = useContractDeploy({
+    const { deployContract, deployedContractAddress, isDeploying, error,setError} = useContractDeploy({
       abi: rpsContractABI,
       bytecode: RPSByteCode,
       value: parseEther(stake),
@@ -34,8 +37,11 @@ export default function StartGame()  {
     const handleSelectChange = (event:React.ChangeEvent<HTMLSelectElement>) => {
       setSelectedOption(Number(event.target.value));
     };
-
     const handleDeploy = async () => {
+      if(balance && parseEther(stake) > balance?.value){
+        setError('Staked amount cannot be more than account balance');
+        return;
+      }
       if(!deployedContractAddress && j2 !== address && selectedOption){
           const {hashedMove , salt:saltUsed,encryptedMove} = await hashMove(selectedOption);
           _salt.current = saltUsed;

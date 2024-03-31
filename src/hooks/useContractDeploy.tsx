@@ -8,7 +8,7 @@ export const useContractDeploy = (params: any) => {
   
   const [deployedContractAddress, setDeployedContractAddress] = useState<string | null>(null);
   const [isDeploying, setIsDeploying] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const deployContract = async ({args}:{args : Array<any>}) => {
     setIsDeploying(true);
@@ -37,7 +37,7 @@ export const useContractDeploy = (params: any) => {
     }
   };
 
-  return { deployContract, deployedContractAddress, isDeploying, error };
+  return { deployContract, deployedContractAddress, isDeploying, error ,setError};
 };
 
 export default useContractDeploy;
