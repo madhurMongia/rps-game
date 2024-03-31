@@ -90,7 +90,7 @@ export function Player1Session({
       <Countdown>
         {`${minutes}: ${seconds}`}
       </Countdown>
-      {player2Move && <InfoText>Opponent's Move: {MOVES[player2Move]}, its your turn now</InfoText>}
+      {player2Move && <InfoText>Opponent Move: {MOVES[player2Move]}, its your turn now</InfoText>}
     { !StoredMove  &&  player2Move ? <><Label htmlFor="weapon-selector" className="visually-hidden">
         Reveal Your Move
       </Label><WeaponSelectorSelect
